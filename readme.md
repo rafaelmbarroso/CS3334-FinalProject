@@ -27,3 +27,7 @@ Monitor: Thread independent, checks current workl;oad and records in 10ms time i
     - 1 monitor 
     - 8 workers 
     - Maanager queue of 8 workers
+
+### Simulations:
+- 2 smins, FIFO approach
+
