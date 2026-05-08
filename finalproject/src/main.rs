@@ -18,7 +18,7 @@ and tells the monitor to quit.
 */
 
 mod config;
-mod generator;
+mod dispatcher;
 mod manager;
 mod metrics;
 mod monitor;
@@ -68,8 +68,8 @@ fn run_experiment(label: &str, params: Params) {
     // Spawn monitor
     let monitor_handle = monitor::spawn(&params, snapshot.clone(), shutdown.clone(), sim_start);
 
-    // Spawn generator (prep the workers and managers)
-    let generator_handle = generator::spawn(&params, event_tx.clone());
+    // Spawn dispatcher (prep the workers and managers)
+    let generator_handle = dispatcher::spawn(&params, event_tx.clone());
 
     // Start the cleanup process, drop the senders to signal shutdown once the generator and manager are done.
     drop(event_tx);
