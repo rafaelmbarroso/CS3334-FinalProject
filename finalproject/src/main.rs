@@ -1,18 +1,21 @@
-//! Entry point — wires together generator, manager, workers, and monitor.
-//!
-//! Thread layout (matches the amendments page = 11 threads):
-//!   1 main + 1 generator + 1 manager + 8 workers + 1 monitor
-//!
-//! Channels:
-//!   generator --Event::Arrived--> manager
-//!   workers   --Event::WorkerReady / Freed--> manager
-//!   manager   --Task--> worker[i]   (one channel per worker)
-//!   workers   --DoneRecord--> main  (collected after join for metrics)
-//!   monitor reads atomics published by manager (MgrSnapshot)
-//!
-//! Shutdown: manager counts Freed events; once it sees all `total_tasks`
-//! completions it drops the per-worker senders, workers exit, main joins
-//! everything, then flips the monitor's shutdown flag.
+/*
+Main thread: spawns everything, collects DoneRecords, prints summary.
+
+Spanwed threads:
+11 Threads = 1 main + 1 generator + 1 manager + 8 workers + 1 monitor
+
+Channels Breakdown:  
+generator --Event::Arrived--> manager
+workers   --Event::WorkerReady / Freed--> manager
+manager   --Task--> worker[i]   (one channel per worker)
+workers   --DoneRecord--> main  (collected after join for metrics)
+monitor reads atomics published by manager (MgrSnapshot)
+
+Shutdown start here. First the manager checks the freed events.
+Once it sees that all the tasks are done, it drops the worker senders
+which tells the workers to exit. Then the main thread joins everything
+and tells the monitor to quit.
+*/
 
 mod config;
 mod generator;
